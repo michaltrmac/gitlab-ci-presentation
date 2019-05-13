@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>GitLab CI / CD</title>
+
+    <link rel="stylesheet" href="css/reveal.css" />
+    <!--<link rel="stylesheet" href="css/theme/black.css">-->
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="css/zenburn.css" />
+
+    <!-- Docker theme -->
+    <link rel="stylesheet" href="css/theme/simple.css" />
+    <link rel="stylesheet" href="css/theme/sky.css" />
+</head>
+<body>
+<div class="reveal">
+    <div class="slides">
+        <header></header>
+
+        <!-- slide 1 -->
+        <section data-state="slide1">
+            <style>.slide1 header:after { content: "GitLab CI / CD"; }</style>
+            <div>
+                <img src="img/gitlab-ci-cd-logo.png" />
+                <br/>
+            </div>
+        </section>
+
+        <!-- slide 2 - Overview -->
+        <section data-state="slide2">
+            <style>.slide2 header:after { content: "CI / CD?"; }</style>
+            <section class="al-left">
+                <h4>CI - Continuous Integration</h4>
+                <p>
+                    Průběžné začleňování kódu vývojových větví do master větve projektu. Následně je vytvořen build
+                    aplikace a nad buildem jsou spuštěny automatické testy.
+                </p>
+            </section>
+
+            <section class="al-left">
+                <h4>CD - Continuous Delivery</h4>
+                <p>
+                    Rozšíření CI procesu. Jedná se o zautomatizování procesu vydáváni aplikace.
+                    Nasazení na server probíhá manuálně.
+                </p>
+            </section>
+
+            <section class="al-left">
+                <h4>CD - Continuous Deployment</h4>
+                <p>
+                    Stejné jako <strong>Continuous delivery</strong>, ale nasazení na server probíhá automaticky.
+                </p>
+            </section>
+
+            <section class="al-left">
+                <img src="img/cicd-CIvsCIvsCD.png" />
+            </section>
+        </section>
+
+        <!-- slide 3 - GitLab integration -->
+        <section data-state="slide3">
+            <section>
+                <style>.slide3 header:after { content: "Integrace v GitLabu"; }</style>
+
+                <ul>
+                    <li>podpora CI / CD již v základu</li>
+                    <li>je potřeba pouze nainstalovat a nakonfigurovat GitLab Runner</li>
+                    <li>zpracování probíhá přes tzv. <strong>Pipelines</strong></li>
+                    <li>Pipelines jsou definované v souboru <strong>.gitlab-ci.yml</strong> v rootu projektu</li>
+                    <li><strong>Pipeline</strong> - skupina jednotlivých úkolů, které mohou být rozděleny do fází</li>
+                    <li><strong>Jobs</strong> (úkoly) - definuje skript, který se má v daném úkolu vykonat (build, unit test, ...)</li>
+                    <li><strong>Stages</strong> (fáze) - seskupení úkolů</li>
+                </ul>
+
+            </section>
+
+            <section>
+                <h4 class="al-left">Ukázka Pipeliny</h4>
+
+                <img src="img/pipelines.png" height="153" width="931"/>
+            </section>
+
+            <section>
+                <h4 class="al-left">Ukázka .gitlab-ci.yml</h4>
+
+                <pre><code data-trim data-noescape>
+                    # Select image from https://hub.docker.com/_/php/
+                    image: php:5.6
+
+                    before_script:
+                    # Install git, the php image doesn't have installed
+                    - apt-get update -yqq
+                    - apt-get install git -yqq
+
+                    # Install mysql driver
+                    - docker-php-ext-install pdo_mysql
+
+                    # Install composer
+                    - curl -sS https://getcomposer.org/installer | php
+
+                    # Install all project dependencies
+                    - php composer.phar install
+
+                    variables:
+                      # Configure mysql service (https://hub.docker.com/_/mysql/)
+                      MYSQL_DATABASE: hello_world_test
+                      MYSQL_ROOT_PASSWORD: mysql
+
+                    # We test PHP5.6 (the default) with MySQL
+                    test:mysql:
+                      script:
+                      - vendor/bin/phpunit --configuration phpunit_mysql.xml --coverage-text
+
+                    # We test PHP7 with MySQL, but we allow it to fail
+                    test:php7:mysql:
+                      image: php:7
+                      script:
+                      - vendor/bin/phpunit --configuration phpunit_mysql.xml --coverage-text
+                      allow_failure: true
+                </code></pre>
+            </section>
+        </section>
+
+        <!-- slide 4 - DEMO -->
+        <section data-state="slide4">
+            <section>
+                <style>.slide4 header:after { content: "ISAC přes CI / CD"; }</style>
+                <p>
+                    DEMO TIME
+                </p>
+            </section>
+        </section>
+
+        <section data-state="slide5">
+            <style>.slide5 header:after { content: "Odkazy"; }</style>
+
+            <div class="al-left">
+                <ul>
+                    <li><a href="https://docs.gitlab.com/ce/ci/quick_start/README.html" target="_blank">GitLab CI/CD - Quick start</a></li>
+                    <li><a href="https://docs.gitlab.com/ce/ci/yaml/README.html" target="_blank">Dokumentace .gitlab-ci.yml</a></li>
+                    <li><a href="https://docs.gitlab.com/ce/ci/examples/README.html" target="_blank">GitLab CI/CD - Examples</a></li>
+                </ul>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+    // More info about config & dependencies:
+    // - https://github.com/hakimel/reveal.js#configuration
+    // - https://github.com/hakimel/reveal.js#dependencies
+    Reveal.initialize({
+        dependencies: [
+            // { src: 'plugin/markdown/marked.js' },
+            // { src: 'plugin/markdown/markdown.js' },
+            // { src: 'plugin/notes/notes.js', async: true },
+            {src: 'js/plugin/zoom-js/zoom.js'},
+            {
+                src: 'js/plugin/highlight/highlight.js', async: true, callback: function () {
+                    hljs.initHighlightingOnLoad();
+                }
+            }
+        ]
+    });
+</script>
+</body>
+</html>
